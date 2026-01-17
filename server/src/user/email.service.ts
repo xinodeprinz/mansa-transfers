@@ -36,7 +36,7 @@ export class EmailService {
       attachments: [
         {
           filename: `receipt-${opts.reference}.pdf`,
-          content: `${url}/receipts/${opts.reference}`,
+          path: `${url}/receipts/${opts.reference}`,
           contentType: 'application/pdf',
         },
       ],
