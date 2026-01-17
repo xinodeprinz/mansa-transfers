@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { LoginDto, SignUpDto, UniqueCheckDto } from './auth.dto.js';
 
@@ -12,11 +12,13 @@ export class AuthController {
   }
 
   // Used to check if email or phone number is unique
+  @HttpCode(200)
   @Post('unique/check')
   uniqueCheck(@Body() dto: UniqueCheckDto) {
     return this.service.uniqueCheck(dto);
   }
 
+  @HttpCode(200)
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.service.login(dto);
