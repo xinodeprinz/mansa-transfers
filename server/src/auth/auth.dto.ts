@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsPhoneNumber, IsString, MinLength } from 'class-validator';
+import {
+  IsDefined,
+  IsEmail,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
 
 export class SignUpDto {
   @IsString()
@@ -21,4 +29,20 @@ export class SignUpDto {
   @MinLength(5)
   @IsString()
   password: string;
+}
+
+export class UniqueCheckDto {
+  @IsPhoneNumber('CM')
+  @Transform(({ value }) => value?.trim())
+  @IsOptional()
+  phone?: string;
+
+  @IsEmail()
+  @Transform(({ value }) => value?.trim())
+  @IsOptional()
+  email?: string;
+
+  @ValidateIf((o) => (!o.phone && !o.email) || (o.phone && o.email))
+  @IsDefined({ message: 'Provide either an email or phone number' })
+  protected readonly combinedCheck: undefined;
 }
