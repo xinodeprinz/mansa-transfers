@@ -9,3 +9,10 @@ export interface MansaAuthenticate {
     expiresIn: number;
   };
 }
+
+export interface SendInVoiceOptions {
+  reference: string;
+  to: string;
+  subject: string;
+  name: string;
+}

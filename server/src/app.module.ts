@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { UserModule } from './user/user.module.js';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { join } from 'path';
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public',
     }),
+    EventEmitterModule.forRoot({ global: true }),
     AuthModule,
     UserModule,
   ],

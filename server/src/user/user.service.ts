@@ -16,6 +16,7 @@ import { Decimal } from '@prisma/client/runtime/client';
 import PDFDocument from 'pdfkit';
 import type { Response } from 'express';
 import { PassThrough } from 'stream';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UserService {
@@ -24,6 +25,7 @@ export class UserService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private eventEmitter: EventEmitter2,
   ) {
     this.api = axios.create({
       baseURL: this.configService.get('MANSA_BASE_URL'),
@@ -124,6 +126,14 @@ export class UserService {
         data: { quantity: { decrement: 1 } },
       });
     }
+
+    // Send payment invoice by email
+    this.eventEmitter.emit('send.invoice', {
+      reference,
+      to: dto.email,
+      name: dto.name,
+      subject: `Your receipt - ${reference}`,
+    });
 
     return { message: 'Payment successful' };
   }
