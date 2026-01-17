@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   FileTypeValidator,
+  Get,
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
@@ -38,5 +39,15 @@ export class UserController {
     image: Express.Multer.File,
   ) {
     return this.service.createProduct(dto, image, req.user.sub);
+  }
+
+  @Get('products')
+  getProducts(@Req() req: UserRequest) {
+    return this.service.getProducts(req.user.sub);
+  }
+
+  @Get('profile')
+  getProfile(@Req() req: UserRequest) {
+    return this.service.getProfile(req.user.sub);
   }
 }

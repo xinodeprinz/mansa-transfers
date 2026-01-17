@@ -53,4 +53,18 @@ export class UserService {
     // Return image's path
     return `${folder}/${filename}`;
   }
+
+  async getProducts(user_id: string) {
+    return this.prisma.product.findMany({
+      where: { user_id },
+      omit: { user_id: true },
+    });
+  }
+
+  async getProfile(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      omit: { password: true },
+    });
+  }
 }
