@@ -67,4 +67,12 @@ export class UserService {
       omit: { password: true },
     });
   }
+
+  getProductById(id: string) {
+    return this.prisma.product.findUnique({
+      where: { id },
+      omit: { user_id: true },
+      include: { user: { omit: { password: true } } },
+    });
+  }
 }

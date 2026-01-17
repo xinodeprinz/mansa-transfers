@@ -46,6 +46,7 @@ model Payment {
   product_id String @db.Uuid
   name       String
   email      String
+  phone      String
 
   product Product @relation(fields: [product_id], references: [id], onDelete: Restrict)
 

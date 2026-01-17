@@ -4,6 +4,7 @@ import {
   FileTypeValidator,
   Get,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Post,
   Req,
@@ -16,11 +17,11 @@ import { UserService } from './user.service.js';
 import { CreateProductDto, type UserRequest } from './user.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@UseGuards(AuthGuard)
 @Controller()
 export class UserController {
   constructor(private service: UserService) {}
 
+  @UseGuards(AuthGuard)
   @Post('product/create')
   @UseInterceptors(FileInterceptor('image'))
   createProduct(
@@ -41,13 +42,20 @@ export class UserController {
     return this.service.createProduct(dto, image, req.user.sub);
   }
 
+  @UseGuards(AuthGuard)
   @Get('products')
   getProducts(@Req() req: UserRequest) {
     return this.service.getProducts(req.user.sub);
   }
 
+  @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@Req() req: UserRequest) {
     return this.service.getProfile(req.user.sub);
+  }
+
+  @Get('products/:id')
+  getProductById(@Param('id') id: string) {
+    return this.service.getProductById(id);
   }
 }
