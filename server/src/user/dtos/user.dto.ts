@@ -19,6 +19,7 @@ export class CreateProductDto {
   @IsOptional()
   description: string;
 
+  @Min(100)
   @IsPositive()
   @Transform(({ value }) => Number(value))
   price: number;
@@ -40,8 +41,4 @@ export class PurchaseProductDto {
   @IsPhoneNumber('CM')
   @Transform(({ value }) => value?.trim())
   phone: string;
-}
-
-export interface UserRequest extends Request {
-  user: { sub: string };
 }

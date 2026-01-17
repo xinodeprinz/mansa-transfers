@@ -15,12 +15,9 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { UserService } from './user.service.js';
-import {
-  CreateProductDto,
-  PurchaseProductDto,
-  type UserRequest,
-} from './user.dto.js';
+import { CreateProductDto, PurchaseProductDto } from './dtos/user.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { UserRequest } from './dtos/interface.js';
 
 @Controller()
 export class UserController {

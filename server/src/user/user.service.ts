@@ -1,13 +1,35 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
-import { CreateProductDto, PurchaseProductDto } from './user.dto.js';
+import { CreateProductDto, PurchaseProductDto } from './dtos/user.dto.js';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
+import axios, { AxiosInstance } from 'axios';
+import { ConfigService } from '@nestjs/config';
+import { MansaAuthenticate } from './dtos/interface.js';
+import { NETWORK_CARRIERS, ONLY_9_DIGITS_RE } from '../utils/carriers.js';
+import { Decimal } from '@prisma/client/runtime/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  private api: AxiosInstance;
+
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    this.api = axios.create({
+      baseURL: this.configService.get('MANSA_BASE_URL'),
+      headers: {
+        'client-key': this.configService.get('MANSA_CLIENT'),
+        'client-secret': this.configService.get('MANSA_SECRET'),
+      },
+    });
+  }
 
   async createProduct(
     dto: CreateProductDto,
@@ -68,15 +90,86 @@ export class UserService {
     });
   }
 
-  getProductById(id: string) {
-    return this.prisma.product.findUnique({
+  async getProductById(id: string) {
+    const product = await this.prisma.product.findUnique({
       where: { id },
       omit: { user_id: true },
       include: { user: { omit: { password: true } } },
     });
+
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
   }
 
   async purchaseProduct(id: string, dto: PurchaseProductDto) {
-    return { id, dto };
+    const product = await this.getProductById(id);
+    const reference = await this.makeMansaPayment(dto, product.price);
+
+    // Payment is successful; store payment in database.
+    await this.prisma.payment.create({
+      data: {
+        id: reference,
+        product_id: product.id,
+        ...dto,
+      },
+    });
+
+    return { message: 'Payment successful' };
+  }
+
+  private async authenticate() {
+    const res = await this.api.post<MansaAuthenticate>('/authenticate');
+    return res.data.data.accessToken;
+  }
+
+  private async initialize(dto: PurchaseProductDto, price: Decimal) {
+    const token = await this.authenticate();
+    const reference = randomUUID();
+
+    await this.api.post(
+      '/initiate',
+      {
+        paymentMode: this.detectCarrier(dto.phone),
+        phoneNumber: dto.phone,
+        transactionType: 'payin',
+        amount: Number(price),
+        fullName: dto.name,
+        emailAddress: dto.email,
+        currencyCode: 'XAF',
+        countryCode: 'CM',
+        externalReference: reference,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    return { reference, token };
+  }
+
+  private async makeMansaPayment(dto: PurchaseProductDto, price: Decimal) {
+    try {
+      const { reference, token } = await this.initialize(dto, price);
+      await this.api.get('/check-status', {
+        params: { reference },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return reference;
+    } catch (error) {
+      console.log(
+        '=== An error occurred while processing Mansa Payment ===',
+        error,
+      );
+      throw new BadRequestException('Payment failed! Please try again.');
+    }
+  }
+
+  private detectCarrier(phone: string) {
+    if (!ONLY_9_DIGITS_RE.test(phone)) return null;
+    const p3 = phone.slice(0, 3);
+    if (NETWORK_CARRIERS.MTN.includes(p3)) return 'MOMO';
+    if (NETWORK_CARRIERS.ORANGE.includes(p3)) return 'OM';
+    return null;
   }
 }
