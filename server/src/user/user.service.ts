@@ -114,6 +114,14 @@ export class UserService {
       },
     });
 
+    // Decrement the quantity if available
+    if (product.quantity && product.quantity > 0) {
+      await this.prisma.product.update({
+        where: { id: product.id },
+        data: { quantity: { decrement: 1 } },
+      });
+    }
+
     return { message: 'Payment successful' };
   }
 
