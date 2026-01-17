@@ -2,10 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
 import { SignUpDto, UniqueCheckDto } from './auth.dto.js';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async signup(dto: SignUpDto) {
     // Ensure uniqueness of necessary fields
@@ -24,7 +28,15 @@ export class AuthService {
 
     // Store information in the database
     const user = await this.prisma.user.create({ data: dto });
-    return user;
+
+    // Generate JWT token
+    const token = await this.jwtService.signAsync({ sub: user.id });
+
+    // Send response
+    return {
+      message: 'Account successfully created',
+      token,
+    };
   }
 
   async uniqueCheck(dto: UniqueCheckDto) {
