@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsPositive, IsString, Min } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsPhoneNumber,
+  IsPositive,
+  IsString,
+  Min,
+} from 'class-validator';
 import type { Request } from 'express';
 
 export class CreateProductDto {
@@ -19,6 +26,20 @@ export class CreateProductDto {
   @IsPositive()
   @IsOptional()
   quantity: number;
+}
+
+export class PurchaseProductDto {
+  @IsString()
+  @Transform(({ value }) => value?.trim())
+  name: string;
+
+  @IsEmail()
+  @Transform(({ value }) => value?.trim())
+  email: string;
+
+  @IsPhoneNumber('CM')
+  @Transform(({ value }) => value?.trim())
+  phone: string;
 }
 
 export interface UserRequest extends Request {

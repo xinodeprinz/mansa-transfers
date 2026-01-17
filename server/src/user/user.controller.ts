@@ -7,6 +7,7 @@ import {
   Param,
   ParseFilePipe,
   Post,
+  Put,
   Req,
   UploadedFile,
   UseGuards,
@@ -14,7 +15,11 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { UserService } from './user.service.js';
-import { CreateProductDto, type UserRequest } from './user.dto.js';
+import {
+  CreateProductDto,
+  PurchaseProductDto,
+  type UserRequest,
+} from './user.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller()
@@ -57,5 +62,10 @@ export class UserController {
   @Get('products/:id')
   getProductById(@Param('id') id: string) {
     return this.service.getProductById(id);
+  }
+
+  @Put('products/:id/purchase')
+  purchaseProduct(@Param('id') id: string, @Body() dto: PurchaseProductDto) {
+    return this.service.purchaseProduct(id, dto);
   }
 }

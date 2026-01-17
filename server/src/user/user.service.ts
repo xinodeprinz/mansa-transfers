@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
-import { CreateProductDto } from './user.dto.js';
+import { CreateProductDto, PurchaseProductDto } from './user.dto.js';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -74,5 +74,9 @@ export class UserService {
       omit: { user_id: true },
       include: { user: { omit: { password: true } } },
     });
+  }
+
+  async purchaseProduct(id: string, dto: PurchaseProductDto) {
+    return { id, dto };
   }
 }
