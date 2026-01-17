@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,6 +19,7 @@ import { UserService } from './user.service.js';
 import { CreateProductDto, PurchaseProductDto } from './dtos/user.dto.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { UserRequest } from './dtos/interface.js';
+import type { Response } from 'express';
 
 @Controller()
 export class UserController {
@@ -64,5 +66,10 @@ export class UserController {
   @Put('products/:id/purchase')
   purchaseProduct(@Param('id') id: string, @Body() dto: PurchaseProductDto) {
     return this.service.purchaseProduct(id, dto);
+  }
+
+  @Get('receipts/:paymentId')
+  downloadReceipt(@Param('paymentId') paymentId: string, @Res() res: Response) {
+    return this.service.downloadReceipt(paymentId, res);
   }
 }

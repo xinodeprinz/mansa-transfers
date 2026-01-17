@@ -13,6 +13,9 @@ import { ConfigService } from '@nestjs/config';
 import { MansaAuthenticate } from './dtos/interface.js';
 import { NETWORK_CARRIERS, ONLY_9_DIGITS_RE } from '../utils/carriers.js';
 import { Decimal } from '@prisma/client/runtime/client';
+import PDFDocument from 'pdfkit';
+import type { Response } from 'express';
+import { PassThrough } from 'stream';
 
 @Injectable()
 export class UserService {
@@ -179,5 +182,71 @@ export class UserService {
     if (NETWORK_CARRIERS.MTN.includes(p3)) return 'MOMO';
     if (NETWORK_CARRIERS.ORANGE.includes(p3)) return 'OM';
     return null;
+  }
+
+  async downloadReceipt(paymentId: string, res: Response) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        created_at: true,
+        product: {
+          select: {
+            title: true,
+            description: true,
+            price: true,
+            user: { select: { first_name: true, last_name: true } },
+          },
+        },
+      },
+    });
+
+    if (!payment) throw new NotFoundException('Payment not found');
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const stream = new PassThrough();
+    doc.pipe(stream);
+
+    // --- PDF content ---
+    doc.fontSize(20).text('Payment Receipt', { align: 'center' });
+    doc.moveDown(1);
+
+    doc.fontSize(12);
+    doc.text(
+      `Merchant: ${payment.product.user.first_name} ${payment.product.user.last_name}`,
+    );
+    doc.text(
+      `Date of payment: ${new Date(payment.created_at).toLocaleString()}`,
+    );
+    doc.text(`Payment reference: ${payment.id}`);
+    doc.moveDown(0.8);
+
+    doc.fontSize(14).text('Product', { underline: true });
+    doc.fontSize(12).text(`Title: ${payment.product.title}`);
+    doc.text(`Description: ${payment.product.description ?? 'N/A'}`);
+    doc.text(`Amount paid: ${payment.product.price} XAF`);
+    doc.moveDown(0.8);
+
+    doc.fontSize(14).text('Customer', { underline: true });
+    doc.fontSize(12).text(`Name: ${payment.name}`);
+    doc.text(`Email: ${payment.email}`);
+
+    doc.moveDown(2);
+    doc
+      .fontSize(10)
+      .fillColor('#666')
+      .text('Thank you for your purchase.', { align: 'center' });
+
+    doc.end();
+
+    const filename = `receipt-${payment.id}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Stream PDF to response
+    stream.pipe(res);
   }
 }

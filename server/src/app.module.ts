@@ -10,6 +10,7 @@ import { join } from 'path';
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
+      serveRoot: '/public',
     }),
     AuthModule,
     UserModule,
