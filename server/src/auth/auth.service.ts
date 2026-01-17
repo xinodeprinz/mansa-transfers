@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
-import { SignUpDto, UniqueCheckDto } from './auth.dto.js';
+import { LoginDto, SignUpDto, UniqueCheckDto } from './auth.dto.js';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
@@ -34,7 +34,7 @@ export class AuthService {
 
     // Send response
     return {
-      message: 'Account successfully created',
+      message: 'Account created',
       token,
     };
   }
@@ -47,5 +47,29 @@ export class AuthService {
 
     if (exists) throw new BadRequestException(`The ${key} already exists`);
     return { ok: true };
+  }
+
+  async login({ email, password }: LoginDto) {
+    const error = 'Invalid login credentials';
+
+    // Check if a user exists with the email
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) throw new BadRequestException(error);
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) throw new BadRequestException(error);
+
+    // Generate JWT token
+    const token = await this.jwtService.signAsync({ sub: user.id });
+
+    // Send response
+    return {
+      message: 'Login successful',
+      token,
+    };
   }
 }

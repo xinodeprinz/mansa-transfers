@@ -46,3 +46,12 @@ export class UniqueCheckDto {
   @IsDefined({ message: 'Provide either an email or phone number' })
   protected readonly combinedCheck: undefined;
 }
+
+export class LoginDto {
+  @IsEmail()
+  @Transform(({ value }) => value?.trim())
+  email: string;
+
+  @IsString()
+  password: string;
+}
