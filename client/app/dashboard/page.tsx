@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   description: "Manage your products and payments",
 };
 
-const DashboardPage = () => {
+const DashboardPage = async () => {
+  await new Promise((r) => setTimeout(r, 2_000));
   return <DashboardScreen />;
 };
 
