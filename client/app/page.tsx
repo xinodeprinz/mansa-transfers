@@ -1,5 +1,13 @@
-const HomePage = () => {
-  return <div>HomePage</div>;
+import { DashboardScreen } from "@/screens";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Manage your products and payments",
 };
 
-export default HomePage;
+const DashboardPage = () => {
+  return <DashboardScreen />;
+};
+
+export default DashboardPage;

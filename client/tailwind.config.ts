@@ -1,0 +1,12 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./screens/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+  ],
+  plugins: [],
+};
+
+export default config;
