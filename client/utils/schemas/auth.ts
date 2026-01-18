@@ -27,4 +27,10 @@ export const signUpSchema = z.object({
     .max(72, "Password is too long."),
 });
 
+export const loginSchema = z.object({
+  email: z.email("Please enter a valid email address.").trim(),
+  password: z.string().min(1, "Password is required."),
+});
+
+export type LoginForm = z.infer<typeof loginSchema>;
 export type SignUpForm = z.infer<typeof signUpSchema>;

@@ -7,7 +7,7 @@ import { normalizeCameroonPhone, SignUpForm, signUpSchema } from "@/utils";
 import { useState } from "react";
 import Link from "next/link";
 
-export default function SignUpPage() {
+export default function SignupScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
