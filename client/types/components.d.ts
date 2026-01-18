@@ -17,7 +17,22 @@ export type TextInputProps<T extends FieldValues> = Omit<
   register: UseFormRegister<T>;
   error?: string;
   helperText?: string;
-
-  // Optional right-side element (ex: show/hide password button)
   rightSlot?: React.ReactNode;
+};
+
+export type ImageUploadProps = {
+  label: string;
+  error?: string;
+  helperText?: string;
+  disabled?: boolean;
+  value: File | null;
+  onChange: (file: File | null) => void;
+};
+
+export type ModalProps = {
+  isOpen: boolean;
+  title: string;
+  description?: string;
+  onClose: () => void;
+  children: React.ReactNode;
 };

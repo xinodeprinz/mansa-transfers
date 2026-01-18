@@ -21,3 +21,18 @@ export function isMtnOrOrangeCameroon(phoneLocal9: string) {
     orange[1].includes(p3)
   );
 }
+
+export function formatCurrencyXaf(value: number) {
+  return new Intl.NumberFormat("fr-FR").format(value) + " XAF";
+}
+
+export function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
